@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include "queue.h"
 #include <time.h>
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 #include <sys/time.h>
+
 
 
 
@@ -13,12 +16,14 @@
 #define N 20000
 #define SPARSITY_LIMIT 0.7
 #define QUEUE_SIZE 100000
+#define MAX_THREADS 4
 
 void MatrixInitialization(int * matrix , int size , double sparsityLimit);
 void degreeCalculator(int *matrix , int * degreeArray);
 void ReverseCuthilMckee(int *matrix , int *degreeArray , int * R );
 void swapElement(int *one, int  *two);
 void sortByDegree(int *neighbors ,int  *degreeArray , int neighborsCounter);
+void matrixReorder(int * matrix , int * R );
 
 
 
@@ -28,8 +33,8 @@ int *  matrix = (int * )malloc(sizeof(int)*N*N);
 struct timeval start, end;
 
 MatrixInitialization(matrix, N , SPARSITY_LIMIT);
-
-
+//
+//
 // for(int i = 0 ; i < N ; i++){
 //   for(int j = 0 ; j < N ; j++){
 //     printf("%d" , *(matrix + i*N + j));
@@ -76,7 +81,7 @@ void MatrixInitialization (int * matrix , int size , double sparsityLimit  ){
   //       exit(0);
   //
   //     int i=0, j=0;
-  //     int value;
+  //     int value;Cilk_lockvarmylock;
   //     char ch;
   //
   //
@@ -99,7 +104,7 @@ void MatrixInitialization (int * matrix , int size , double sparsityLimit  ){
   //     }
   //     fclose(file);
 
-//  srand(time(NULL));
+  //srand(time(NULL));
     double randomNumber=0;
 
     while(1){
@@ -137,7 +142,7 @@ int *notAdded = (int*)malloc(N*sizeof(int));
 int currentIndex ;
 
 
-  for (int  i = 0; i < N; i++) {
+  cilk_for (int  i = 0; i < N; i++) {
     notAdded[i] = 1;
   }
 
@@ -162,7 +167,7 @@ while(Rsize != N){
    int neighborsCounter = 0;
 
 
-   for (int i = 0; i < N ; i++){
+   cilk_for (int i = 0; i < N ; i++){
      if( i!= currentIndex && *(matrix+(currentIndex)*N + i) == 1 && notAdded[i] == 1 ){
        neighbors[neighborsCounter++] = i;
        notAdded[i] = 0;
@@ -172,7 +177,7 @@ while(Rsize != N){
   //sort the neighbors found by their degree value in order to get the increasing order
   sortByDegree(neighbors , degreeArray , neighborsCounter);
 
-  for(int i = 0; i < neighborsCounter ; i++){
+  cilk_for(int i = 0; i < neighborsCounter ; i++){
       enqueue( Q, neighbors[i]);
   }
   R[Rsize++] = currentIndex;
@@ -206,7 +211,19 @@ while(Rsize != N){
 
   }
 
+void matrixReorder(int * matrix , int * R ){
 
+
+
+
+
+
+
+
+
+
+
+}
 
 
 void sortByDegree(int *neighbors ,int  *degreeArray , int neighborsCounter){
@@ -236,6 +253,7 @@ void swapElement(int* one, int* two) {
 
 
 void degreeCalculator(int *matrix,int *  degreeArray){
+
   int sum = 0 ;
   for(int i = 0; i< N; i++){
     for(int j = 0; j < N ; j++){
