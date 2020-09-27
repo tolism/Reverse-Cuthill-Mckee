@@ -65,6 +65,9 @@ if ( save){
    int* reorderedMatrix = matrixReorder( matrix, R, N) ;
    outputWrite(reorderedMatrix, N, N, "outputMatrix.txt");
 }
+free(matrix);
+free(degreeArray);
+free(R);
 };
 
 
@@ -134,6 +137,7 @@ else{
       fclose(file);
   }
 }
+
 }
 
 //THe Reverse Cuthil Mckee function
@@ -197,6 +201,7 @@ while(Rsize != N){
   }
  }
   free(Q);
+  free(notAdded);
 
   //Reversing
   int nSize  = N;

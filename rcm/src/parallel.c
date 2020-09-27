@@ -73,6 +73,9 @@ if ( save){
    outputWrite(reorderedMatrix, N, N, "outputMatrix.txt");
 }
 
+free(matrix);
+free(degreeArray);
+free(R);
 
 };
 
@@ -189,6 +192,7 @@ while(Rsize != N){
   }
  }
   free(Q);
+  free(notAdded);
 
 
   //Reversing
