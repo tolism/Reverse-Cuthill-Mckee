@@ -16,11 +16,12 @@
 
 
 
-#define N 10000
-#define SPARSITY_LIMIT 0.8
+#define N 1000
+#define SPARSITY_LIMIT 0.85
 #define QUEUE_SIZE 10000
-#define MODE 1
+#define MODE 2
 #define SAVE 0
+
 
 
 //Function Decleration
@@ -34,6 +35,7 @@ void outputWrite(int* matrix, int rows, int col, char* file_path);
 
 
 int main(int  argc, const char* argv[]){
+
 
 int *  matrix = (int * )calloc(N*N,sizeof(int));
 int * degreeArray = (int *)calloc(N,sizeof(int));
@@ -54,9 +56,9 @@ gettimeofday(&start, NULL);
 degreeCalculator(matrix , degreeArray) ;
 ReverseCuthilMckee(matrix , degreeArray , R);
 gettimeofday(&end, NULL);
-
+int numberOfN = N;
 double time = ((double)((end.tv_sec*1e6 + end.tv_usec) - (start.tv_sec*1e6 + start.tv_usec)))*1e-6;
-printf("Execution Time: %lf sec\n", time);
+printf("Execution Time: %lf sec sequential version N=%d\n ", time , numberOfN);
 
 int save = SAVE;
 if ( save){
@@ -134,7 +136,7 @@ else{
 }
 }
 
-
+//THe Reverse Cuthil Mckee function
 void ReverseCuthilMckee(int *matrix , int *degreeArray ,int *  R){
 unsigned cap = QUEUE_SIZE;
 Queue *Q  = createQueue(cap);
@@ -212,9 +214,7 @@ while(Rsize != N){
 
   }
 
-
-
-
+//Sort the neighbors by their degree
 void sortByDegree(int *neighbors ,int  *degreeArray , int neighborsCounter){
 
 int *tempArray = (int *)malloc(neighborsCounter*sizeof(int));
@@ -237,14 +237,14 @@ for (int i = 0; i < neighborsCounter-1; i++){
   }
 }
 
-
+//Swwapping element function
 void swapElement(int* one, int* two) {
   int temp = *one;
   *one = *two;
   *two = temp;
 }
 
-
+//Implementation of the Degree Calculator function
 void degreeCalculator(int *matrix,int *  degreeArray){
   int sum = 0 ;
   for(int i = 0; i< N; i++){
@@ -256,7 +256,7 @@ void degreeCalculator(int *matrix,int *  degreeArray){
   }
 }
 
-
+//Reordering the matrix using R
 int* matrixReorder(int* matrix, int* R, int size) {
   int* newMatrix =(int*) calloc(size*size, sizeof(int));
   if(newMatrix == NULL){
@@ -279,6 +279,7 @@ int* matrixReorder(int* matrix, int* R, int size) {
   return newMatrix;
 }
 
+//Function used to write the reversed matrix to a file
 void outputWrite(int* matrix, int rows, int col, char* file_path)
 {
   FILE* file = fopen(file_path, "w");

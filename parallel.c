@@ -17,11 +17,15 @@
 
 
 
-#define N 10000
-#define SPARSITY_LIMIT 0.8
+#define N 3000
+#define SPARSITY_LIMIT 0.999
 #define QUEUE_SIZE 10000
 #define MAX_THREADS 8
-#define SAVE 0
+#define SAVE 1
+
+
+//Calculating the chunksize for the threads
+int  CHUNKSIZE = N / MAX_THREADS;
 
 
 //Function Decleration
@@ -32,14 +36,14 @@ void swapElement(int *one, int  *two);
 void sortByDegree(int *neighbors ,int  *degreeArray , int neighborsCounter);
 int* matrixReorder(int* matrix, int* R, int size);
 int findMinIdxParallel(int* degrees, int* notVisited, int size, int threads_num);
-void mergeSort_degrees_indexes(int * arr,int * idx, int l, int r);
+void mergeSort(int * arr,int * idx, int l, int r);
 void merge(int * arr,int * idx, int l, int m, int r);
 void outputWrite(int* matrix, int rows, int col, char* file_path);
 
-//Calculating the chunksize for the threads
-int CHUNKSIZE = N / MAX_THREADS;
+
 
 int main(int  argc, const char* argv[]){
+
 
   int *  matrix = (int * )calloc(N*N,sizeof(int));
   int * degreeArray = (int *)calloc(N,sizeof(int));
@@ -59,8 +63,9 @@ degreeCalculator(matrix , degreeArray) ;
 ReverseCuthilMckee(matrix , degreeArray , R);
 gettimeofday(&end, NULL);
 
+int numberOfN = N;
 double time = ((double)((end.tv_sec*1e6 + end.tv_usec) - (start.tv_sec*1e6 + start.tv_usec)))*1e-6;
-printf("Execution Time: %lf sec\n", time);
+printf("Execution Time: %lf sec parallel version N=%d\n", time , numberOfN);
 
 int save = SAVE;
 if ( save){
@@ -75,7 +80,7 @@ if ( save){
 //Matrix Initialization function
 void MatrixInitialization (int * matrix , int size , double sparsityLimit  ){
 
-//sparsityLimit the percentage of the zeros
+  //sparsityLimit the percentage of the zeros
   int nonZeros = (size*size) - (size*size*sparsityLimit);
   int sum = 0, randX=0, randY=0;
   srand(time(NULL));
@@ -106,7 +111,7 @@ void MatrixInitialization (int * matrix , int size , double sparsityLimit  ){
   }
 }
 
-
+//THe Reverse Cuthil Mckee function
 void ReverseCuthilMckee(int *matrix , int *degreeArray ,int *  R){
 unsigned cap = QUEUE_SIZE;
 Queue *Q  = createQueue(cap);
@@ -168,7 +173,7 @@ while(Rsize != N){
 
   mergeSort(degreeArray , tempArray  , 0, neighborsCounter - 1  );
 
-
+//Add parallel the neighbors at the queue
   #pragma omp parallel for ordered shared(Q,neighborsCounter) private(i)
            for( i = 0; i < neighborsCounter ; i++){
              #pragma omp ordered
@@ -184,6 +189,7 @@ while(Rsize != N){
   }
  }
   free(Q);
+
 
   //Reversing
   int nSize  = N;
@@ -201,6 +207,7 @@ while(Rsize != N){
 
   }
 
+//Reorder the Matrix using the R
   int* matrixReorder(int* matrix, int* R, int size) {
     int* newMatrix =(int*) calloc(size*size, sizeof(int));
     if(newMatrix == NULL){
@@ -223,29 +230,7 @@ while(Rsize != N){
     return newMatrix;
   }
 
-void sortByDegree(int *neighbors ,int  *degreeArray , int neighborsCounter){
-
-int *tempArray = (int *)malloc(neighborsCounter*sizeof(int));
-if(tempArray == NULL){
-  printf("Error at memory Initialization \n");
-  exit(0);
-}
-
-for(int i = 0; i < neighborsCounter ; i++){
-  tempArray[i] = degreeArray[neighbors[i]];
-}
-//Sort the array of the neighbors in increasing order by their degree
-for (int i = 0; i < neighborsCounter-1; i++){
-    for (int j = 0; j < neighborsCounter-i-1; j++){
-      if (tempArray[j] > tempArray[j+1]){
-          swapElement(&tempArray[j], &tempArray[j+1]);
-          swapElement(&neighbors[j], &neighbors[j+1]);
-      }
-    }
-  }
-}
-
-
+//Swapping function
 void swapElement(int* one, int* two) {
   int temp = *one;
   *one = *two;
@@ -253,6 +238,7 @@ void swapElement(int* one, int* two) {
 }
   int minDegreeINdex = 0 ;
 
+//Parallel Implementation of the Degree Calculator
   void degreeCalculator(int* matrix, int * degreeArray) {
 
     int i;
@@ -272,6 +258,9 @@ void swapElement(int* one, int* two) {
 
   }
 
+//Function to find the min index in Parallel
+/* Using MAX_THREADS we break our array into sub-arrays
+/Find the local maximas and then find the global one */
 int findMinIdxParallel(int* degrees, int* notVisited, int size, int threads_num) {
   int degArray[threads_num];
   int idxArray[threads_num];
@@ -308,7 +297,7 @@ int findMinIdxParallel(int* degrees, int* notVisited, int size, int threads_num)
 
   return globalMinIdx;
 }
-
+//Merge function used in merge sort
 void merge(int * arr,int * idx, int l, int m, int r)
 {
     int i, j, k;
@@ -316,7 +305,7 @@ void merge(int * arr,int * idx, int l, int m, int r)
     int n2 = r - m;
 
     //Temp arrays for the Left and Right sub problem
-    int L[n1], R[n2];
+    int Left[n1], Right[n2];
     int Lidx[n1], Ridx[n2];
 
     //Copying the data to the subarrays using two different threads , one for each
@@ -324,13 +313,13 @@ void merge(int * arr,int * idx, int l, int m, int r)
     {
       #pragma omp section
       for (i = 0; i < n1; i++){
-          L[i] = arr[l + i];
+          Left[i] = arr[l + i];
           Lidx[i] = idx[l + i];
       }
 
       #pragma omp section
       for (j = 0; j < n2; j++){
-          R[j] = arr[m + 1 + j];
+          Right[j] = arr[m + 1 + j];
           Ridx[j] = idx[m + 1 + j];
       }
     }
@@ -339,13 +328,13 @@ void merge(int * arr,int * idx, int l, int m, int r)
     j = 0; // Initial index of second subarray
     k = l; // Initial index of merged subarray
     while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k]  = L[i];
+        if (Left[i] <= Right[j]) {
+            arr[k]  = Left[i];
             idx[k] = Lidx[i];
             i++;
         }
         else {
-            arr[k] = R[j];
+            arr[k] = Right[j];
             idx[k] = Ridx[j];
             j++;
         }
@@ -353,14 +342,14 @@ void merge(int * arr,int * idx, int l, int m, int r)
     }
 
     while (i < n1) {
-        arr[k] = L[i];
+        arr[k] = Left[i];
         idx[k] = Lidx[i];
         i++;
         k++;
     }
 
     while (j < n2) {
-        arr[k] = R[j];
+        arr[k] = Right[j];
         idx[k] = Ridx[j];
         j++;
         k++;
@@ -368,7 +357,7 @@ void merge(int * arr,int * idx, int l, int m, int r)
 }
 
 // l is for left index and r is right index of the
-   sub-array of arr to be sorted //
+//   sub-array of arr to be sorted
 void mergeSort(int * arr,int * idx, int l, int r)
 {
     if (l < r) {
@@ -392,7 +381,7 @@ void mergeSort(int * arr,int * idx, int l, int r)
     }
 }
 
-
+//FUnction used to write the Reverse matrix to a file
 void outputWrite(int* matrix, int rows, int col, char* file_path)
 {
   FILE* file = fopen(file_path, "w");

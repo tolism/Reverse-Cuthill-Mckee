@@ -1,0 +1,20 @@
+Execution Time: 0.003199 sec sequential version N=1000
+Execution Time: 0.015093 sec parallel version N=1000
+Execution Time: 0.056403 sec sequential version N=5000
+Execution Time: 0.043603 sec parallel version N=5000
+Execution Time: 0.216303 sec sequential version N=10000
+Execution Time: 0.129762 sec parallel version N=10000
+Execution Time: 0.796846 sec sequential version N=15000
+Execution Time: 0.245612 sec parallel version N=15000
+Execution Time: 1.456165 sec sequential version N=20000
+Execution Time: 0.392136 sec parallel version N=20000
+Execution Time: 2.240331 sec sequential version N=25000
+Execution Time: 0.570048 sec parallel version N=25000
+Execution Time: 2.919528 sec sequential version N=30000
+Execution Time: 0.783661 sec parallel version N=30000
+Execution Time: 6.676146 sec sequential version N=35000
+Execution Time: 1.019724 sec parallel version N=35000
+Execution Time: 9.814968 sec sequential version N=40000
+Execution Time: 1.296898 sec parallel version N=40000
+
+
