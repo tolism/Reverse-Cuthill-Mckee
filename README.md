@@ -12,11 +12,6 @@ make all
 
 ```
 
-
-### Prerequisites
-
-To run local you need openMP library 
-
 ### Modes
 
 In the sequential version set MODE 1 if you want to read data from an already made sparse matrix or set MODE 2 if you want to create a new one.
