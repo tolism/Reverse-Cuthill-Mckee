@@ -1,4 +1,4 @@
-# Reverse-Cuthill-Mckee-
+# Reverse Cuthill Mckee Algorithm
 Parallel and Distributed Systems : 4th assignment 
 
 ## Installation and Execution 
